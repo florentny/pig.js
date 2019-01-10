@@ -223,7 +223,7 @@
        * Default: 8
        * Description: Size in pixels of the gap between images in the grid.
        */
-      spaceBetweenImages: 8,
+      spaceBetweenImages: 4,
 
       /**
        * Type: Number
@@ -240,7 +240,7 @@
        *   user is scrolling down, 1000px worth of images will be loaded below
        *   the viewport.
        */
-      primaryImageBufferHeight: 1000,
+      primaryImageBufferHeight: 5000,
 
       /**
        * Type: Number
@@ -310,9 +310,9 @@
        */
       getImageSize: function(lastWindowWidth) {
         if (lastWindowWidth <= 640)
-          return 100;
-        else if (lastWindowWidth <= 1920)
           return 250;
+        else if (lastWindowWidth <= 1920)
+          return 500;
         return 500;
       }
     };
@@ -588,8 +588,8 @@
       this.settings.secondaryImageBufferHeight;
     var bufferBottom =
       (this.scrollDirection === 'down') ?
-      this.settings.secondaryImageBufferHeight :
-      this.settings.primaryImageBufferHeight;
+      this.settings.primaryImageBufferHeight :
+      this.settings.secondaryImageBufferHeight;
 
     // Now we compute the location of the top and bottom buffers:
     var containerOffset = _getOffsetTop(this.container);
@@ -613,7 +613,7 @@
         image.hide();
       } else {
         // Load Image
-        image.load();
+        image.load(image.index);
       }
     }.bind(this));
   };
@@ -643,7 +643,7 @@
       var newYOffset = _this.scroller === window ? window.pageYOffset : _this.scroller.scrollTop;
       _this.previousYOffset = _this.latestYOffset || newYOffset;
       _this.latestYOffset = newYOffset;
-      _this.scrollDirection = (_this.latestYOffset > _this.previousYOffset) ? 'down' : 'up';
+      _this.scrollDirection = (_this.latestYOffset >= _this.previousYOffset) ? 'down' : 'up';
 
       // Call _this.doLayout, guarded by window.requestAnimationFrame
       if (!_this.inRAF) {
@@ -752,7 +752,7 @@
    * This function will append the figure into the DOM, create and insert the
    * thumbnail, and create and insert the full image.
    */
-  ProgressiveImage.prototype.load = function() {
+  ProgressiveImage.prototype.load = function(indeximg) {
     // Create a new image element, and insert it into the DOM. It doesn't
     // matter the order of the figure elements, because all positioning
     // is done using transforms.
@@ -771,6 +771,14 @@
       if (!this.existsOnPage) {
         return;
       }
+		
+	  if (!this.href) {
+	  	this.href = document.createElement("a");
+	  	this.href.setAttribute("href", "javascript:;");
+      this.href.setAttribute("data-fancybox-trigger", "photo3");
+      this.href.setAttribute("data-fancybox-index", indeximg);
+	  	this.getElement().appendChild(this.href);
+	  }
 
       // Show thumbnail
       if (!this.thumbnail) {
@@ -786,7 +794,8 @@
           }
         }.bind(this);
 
-        this.getElement().appendChild(this.thumbnail);
+        //this.getElement().appendChild(this.thumbnail);
+        this.href.appendChild(this.thumbnail);
       }
 
       // Show full image
@@ -802,7 +811,8 @@
           }
         }.bind(this);
 
-        this.getElement().appendChild(this.fullImage);
+        //this.getElement().appendChild(this.fullImage);
+        this.href.appendChild(this.fullImage);
       }
     }.bind(this), 100);
   };
@@ -818,14 +828,19 @@
     if (this.getElement()) {
       if (this.thumbnail) {
         this.thumbnail.src = '';
-        this.getElement().removeChild(this.thumbnail);
+        this.getElement().firstChild.removeChild(this.thumbnail);
         delete this.thumbnail;
       }
 
       if (this.fullImage) {
         this.fullImage.src = '';
-        this.getElement().removeChild(this.fullImage);
+        this.getElement().firstChild.removeChild(this.fullImage);
         delete this.fullImage;
+      }
+      
+      if (this.href) {
+      	this.getElement().removeChild(this.href);
+        delete this.href;
       }
     }
 
