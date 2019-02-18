@@ -774,7 +774,7 @@
 		
 	  if (!this.href) {
 	  	this.href = document.createElement("a");
-	  	this.href.setAttribute("href", "javascript:;");
+	  	//this.href.setAttribute("href", "javascript:;");
       this.href.setAttribute("data-fancybox-trigger", "photo3");
       this.href.setAttribute("data-fancybox-index", indeximg);
 	  	this.getElement().appendChild(this.href);
